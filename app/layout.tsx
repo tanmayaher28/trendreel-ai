@@ -6,8 +6,8 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Sonora — your sound, your space",
-  description: "A personal music listening space, made for the in-between moments.",
+  title: "Sonora — good music, more room to find it",
+  description: "Explore independent sounds from artists around the world. Every track leads back to its creator.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

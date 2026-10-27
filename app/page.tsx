@@ -1,56 +1,67 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-type Track = { title: string; artist: string; album: string; art: string; seconds: number };
-const tracks: Track[] = [
-  {title:"Midnight City",artist:"M83",album:"Hurry Up, We're Dreaming",art:"photo-1519608487953-e999c86e7455",seconds:244},
-  {title:"The Less I Know The Better",artist:"Tame Impala",album:"Currents",art:"photo-1519681393784-d120267933ba",seconds:216},
-  {title:"Sunset Lover",artist:"Petit Biscuit",album:"Presence",art:"photo-1500530855697-b586d89ba3ee",seconds:214},
-  {title:"Space Song",artist:"Beach House",album:"Depression Cherry",art:"photo-1470252649378-9c29740c9fa8",seconds:320},
-  {title:"Tadow",artist:"Masego, FKJ",album:"Lady Lady",art:"photo-1518837695005-2083093ee35b",seconds:325},
-  {title:"Electric Feel",artist:"MGMT",album:"Oracular Spectacular",art:"photo-1470225620780-dba8ba36b745",seconds:229},
-  {title:"Borderline",artist:"Tame Impala",album:"The Slow Rush",art:"photo-1490730141103-6cac27aaab94",seconds:237},
-  {title:"Pink + White",artist:"Frank Ocean",album:"Blonde",art:"photo-1497250681960-ef046c08a56e",seconds:184}
-];
-const art = (id:string,w=600) => "https://images.unsplash.com/"+id+"?auto=format&fit=crop&w="+w+"&q=85";
-const glyph:Record<string,string> = {home:"⌂",search:"⌕",library:"▤",heart:"♡",plus:"+",play:"▶",pause:"Ⅱ",back:"◀",next:"▶",shuffle:"⤨",repeat:"⟳",clock:"◷",more:"•••",volume:"◖",arrow:"↗"};
-function I({name}:{name:string}) { return <span aria-hidden="true" className="glyph">{glyph[name]||"•"}</span>; }
+type Track = { id:string; name:string; artist_name:string; album_name:string; image:string; audio:string; shareurl:string; duration:number; license_ccurl?:string };
+const moods = ["All sounds","Ambient","Electronic","Jazz","Rock","Classical","Instrumental"];
+const fmt = (n:number) => Math.floor(n/60)+":"+String(n%60).padStart(2,"0");
 
-export default function Home(){
- const [current,setCurrent]=useState(0),[playing,setPlaying]=useState(false),[progress,setProgress]=useState(37),[query,setQuery]=useState(""),[nav,setNav]=useState("Home"),[liked,setLiked]=useState<number[]>([3,7]),[shuffle,setShuffle]=useState(false),[repeat,setRepeat]=useState(false),[volume,setVolume]=useState(70);
- useEffect(()=>{if(!playing)return;const id=window.setTimeout(()=>{if(progress+1>=tracks[current].seconds){setProgress(0);setCurrent(i=>(i+1)%tracks.length)}else setProgress(progress+1)},1000);return()=>window.clearTimeout(id)},[playing,current,progress]);
- const results=useMemo(()=>tracks.map((t,i)=>({...t,i})).filter(t=>(t.title+" "+t.artist+" "+t.album).toLowerCase().includes(query.toLowerCase())),[query]);
- const play=(i:number)=>{setCurrent(i);setProgress(0);setPlaying(true)};
- const like=(i:number)=>setLiked(a=>a.includes(i)?a.filter(n=>n!==i):[...a,i]);
- const time=(n:number)=>Math.floor(n/60)+":"+String(n%60).padStart(2,"0");
- const t=tracks[current];
- return <main className="app-shell">
-  <aside className="sidebar glass">
-   <a className="brand" href="#home"><span className="logo-mark"><i/><i/><i/></span>sonora</a>
-   <p className="nav-caption">MENU</p>{[{n:"Home",g:"home"},{n:"Search",g:"search"},{n:"Your Library",g:"library"}].map(x=><button key={x.n} className={"nav-link "+(nav===x.n?"active":"")} onClick={()=>{setNav(x.n);if(x.n==="Search")document.getElementById("search")?.focus()}}><I name={x.g}/>{x.n}{nav===x.n&&<i className="nav-light"/>}</button>)}
-   <div className="collection-head"><span className="nav-caption">YOUR COLLECTION</span><button className="tiny-button" aria-label="Create playlist"><I name="plus"/></button></div>
-   <button className="collection"><span className="cover mini liked"><I name="heart"/></span>Liked Songs<span className="count">24</span></button>
-   <button className="collection"><span className="cover mini sunset">✦</span>Late night drive</button>
-   <button className="collection"><span className="cover mini blue">◌</span>Soft focus</button>
-   <button className="collection"><span className="cover mini orange">♫</span>Sunday mornings</button>
-   <div className="sidebar-bottom"><div className="promo"><span>✦</span><strong>Make it yours</strong><p>Your sound, in full color.</p><button>Explore Plus&nbsp; ↗</button></div><div className="profile"><span className="avatar">A</span><span><b>Alex Morgan</b><small>Free account</small></span><I name="more"/></div></div>
-  </aside>
-  <section className="center" id="home">
-   <header className="topbar"><div className="arrows"><button>‹</button><button>›</button></div><label className="search"><I name="search"/><input id="search" value={query} onChange={e=>setQuery(e.target.value)} placeholder="What do you want to hear?"/>{query&&<button onClick={()=>setQuery("")}>×</button>}<kbd>⌘ K</kbd></label><button className="plus-pill">Explore Plus ↗</button><button className="avatar small-avatar">A</button></header>
-   <div className="scroll-content">
-    <div className="greeting"><div><span className="overline"><i/> YOUR PERSONAL SOUNDTRACK</span><h1>{query?"Search results":"Good evening, Alex"} <span>✦</span></h1><p>{query?"A little something for "+query:"A little music makes everything feel better."}</p></div><div className="date"><small>MONDAY</small><b>OCT 27</b><i>◒</i></div></div>
-    {!query&&<section className="hero"><div className="hero-bg" style={{backgroundImage:"url("+art("photo-1470225620780-dba8ba36b745",1400)+")"}}/><div className="hero-shade"/><div className="hero-copy"><span className="overline"><i/> MADE FOR YOUR MOMENT</span><h2>Find your<br/><em>after hours.</em></h2><p>Warm lights. Open roads. No rush to get anywhere.</p><button className="hero-button" onClick={()=>play(0)}><I name="play"/> Play your mix <b>→</b></button></div><div className="vinyl"><img src={art("photo-1519608487953-e999c86e7455",480)} alt="After Hours mix artwork"/><i/></div><span className="hero-tag">SONORA SELECTS&nbsp;&nbsp; · &nbsp;&nbsp;01 / 04</span></section>}
-    {!query&&<section className="quick-row">{tracks.slice(0,4).map((x,i)=><button className="quick" key={x.title} onClick={()=>play(i)}><img src={art(x.art,130)} alt=""/><b>{x.title}</b><span>▶</span></button>)}</section>}
-    <section className="section"><div className="section-title"><div><span className="overline muted">PICKED FOR YOU</span><h2>{query?"Matches for “"+query+"”":"Your daily rotation"}</h2></div><button className="see-all">See all&nbsp; →</button></div>
-     {results.length?<div className="album-grid">{results.slice(0,4).map(x=><article className="album" key={x.title}><div className="album-image"><img src={art(x.art)} alt={x.album+" cover"}/><button className="album-play" onClick={()=>play(x.i)} aria-label={"Play "+x.title}>▶</button><button className={"album-like "+(liked.includes(x.i)?"liked-text":"")} onClick={()=>like(x.i)} aria-label="Toggle liked">{liked.includes(x.i)?"♥":"♡"}</button></div><b>{x.title}</b><small>{x.artist} · {x.album}</small></article>)}</div>:<div className="empty"><b>No tracks found</b><span>Try another title or artist.</span></div>}
+export default function Home() {
+  const [tracks,setTracks]=useState<Track[]>([]);
+  const [query,setQuery]=useState("");
+  const [mood,setMood]=useState("All sounds");
+  const [offset,setOffset]=useState(0);
+  const [loading,setLoading]=useState(true);
+  const [configured,setConfigured]=useState(true);
+  const [error,setError]=useState("");
+  const [current,setCurrent]=useState<Track|null>(null);
+  const [playing,setPlaying]=useState(false);
+  const [progress,setProgress]=useState(0);
+  const audio=useRef<HTMLAudioElement>(null);
+
+  useEffect(()=>{
+    let cancelled=false;
+    const timer=window.setTimeout(async()=>{
+      setLoading(true); setError("");
+      try {
+        const params=new URLSearchParams({q:query,genre:mood==="All sounds"?"":mood,offset:String(offset)});
+        const response=await fetch("/api/tracks?"+params.toString(),{cache:"no-store"});
+        const data=await response.json();
+        if(!response.ok) throw new Error(data.error||"The music catalog is unavailable.");
+        if(cancelled)return;
+        setConfigured(data.configured!==false);
+        if(offset===0)setTracks(data.tracks||[]);
+        else setTracks(existing=>existing.concat(data.tracks||[]));
+      } catch(e) { if(!cancelled)setError(e instanceof Error?e.message:"Could not load music."); }
+      finally { if(!cancelled)setLoading(false); }
+    },250);
+    return()=>{cancelled=true;window.clearTimeout(timer)};
+  },[query,mood,offset]);
+
+  useEffect(()=>{const player=audio.current;if(!player||!current)return;player.src=current.audio;player.load();},[current]);
+  useEffect(()=>{const player=audio.current;if(!player||!current)return;if(playing)void player.play().catch(()=>setPlaying(false));else player.pause();},[playing,current]);
+  const play=(track:Track)=>{if(current?.id===track.id){setPlaying(value=>!value);return}setCurrent(track);setProgress(0);setPlaying(true)};
+  const next=()=>{if(!tracks.length)return;const i=tracks.findIndex(x=>x.id===current?.id);const track=tracks[(i+1+tracks.length)%tracks.length];setCurrent(track);setProgress(0);setPlaying(true)};
+  const selectMood=(value:string)=>{setMood(value);setOffset(0)};
+  const search=(value:string)=>{setQuery(value);setOffset(0)};
+
+  return <main className="sonora">
+    <header className="masthead"><a href="/" className="wordmark"><span className="mark">s<span>✳</span></span>sonora</a><nav><a className="nav-current" href="#discover">Discover</a><a href="#catalog">The catalog</a><a href="#about">About this project</a></nav><label className="search-field"><span>⌕</span><input value={query} onChange={e=>search(e.target.value)} placeholder="Find an artist, mood, or track"/><kbd>⌘ K</kbd></label><button className="profile-button" aria-label="Your profile">A</button></header>
+    <section className="intro" id="discover"><div className="intro-copy"><span className="kicker"><i/> A LISTENING ROOM FOR WHAT'S NEXT</span><h1>Good music.<br/><em>More room to find it.</em></h1><p>Explore independent sounds from artists around the world. Every track leads back to the person who made it.</p><a className="intro-link" href="#catalog">Explore the catalog <span>↓</span></a></div><div className="sound-art" aria-hidden="true"><div className="halo halo-one"/><div className="halo halo-two"/><div className="sound-core"><span>SONORA</span><b>◖</b><small>FIELD NOTES<br/>VOL. 01</small></div><i className="spark spark-a">✳</i><i className="spark spark-b">✳</i><span className="orbit-word">SOUND HAS NO EDGES</span></div><span className="intro-index">INDEPENDENT MUSIC · OPEN DISCOVERY</span></section>
+    <section className="mood-section"><div className="section-heading"><div><span className="kicker muted">START WITH A FEELING</span><h2>What sounds like you?</h2></div><span className="heading-note">A little direction, a lot of discovery.</span></div><div className="mood-list">{moods.map((item,i)=><button key={item} className={"mood-chip "+(mood===item?"chosen":"")} onClick={()=>selectMood(item)}><span>{["✳","◒","∿","♬","◈","⌁","◌"][i]}</span>{item}</button>)}</div></section>
+    <section className="catalog-section" id="catalog"><div className="section-heading catalog-heading"><div><span className="kicker muted">A WORLD OF INDEPENDENT SOUND</span><h2>{query?"Results for “"+query+"”":mood==="All sounds"?"Freshly found":"The "+mood.toLowerCase()+" shelf"}</h2></div><span className="results-note">{loading?"TUNING IN":tracks.length+" TRACKS ON THIS PAGE"}</span></div>
+      {!configured?<div className="setup-panel"><div className="setup-icon">✳</div><div><span className="kicker muted">ONE SMALL SETUP STEP</span><h3>Connect your music catalog</h3><p>This site is wired for a licensed catalog. Add the provider’s server-side API credentials after registering the public app.</p><code>JAMENDO_CLIENT_ID=your_client_id</code><a href="https://developer.jamendo.com/" target="_blank" rel="noreferrer">Open developer portal ↗</a></div></div>:
+      error?<div className="empty-panel"><span>!</span><b>We couldn't reach the catalog.</b><p>{error}</p></div>:
+      tracks.length===0&&!loading?<div className="empty-panel"><span>◌</span><b>No tracks in this corner yet.</b><p>Try another mood or a different search.</p></div>:
+      <div className="track-grid">{tracks.map((item,i)=><article className="track-card" key={item.id}><div className="artwork"><img src={item.image} alt={item.album_name||item.name+" artwork"} loading="lazy"/><span className="art-count">{String(i+1+offset).padStart(2,"0")}</span><button aria-label={playing&&current?.id===item.id?"Pause "+item.name:"Play "+item.name} onClick={()=>play(item)}>{playing&&current?.id===item.id?"Ⅱ":"▶"}</button></div><div className="track-meta"><div><h3>{item.name}</h3><p>{item.artist_name}</p><small>{item.album_name||"Single"} · {fmt(item.duration)}</small></div><a href={item.shareurl} target="_blank" rel="noreferrer" aria-label={"Open "+item.name+" on provider"}>↗</a></div><div className="license-line"><span>INDEPENDENT RELEASE</span><a href={item.license_ccurl||item.shareurl} target="_blank" rel="noreferrer">SOURCE & LICENSE ↗</a></div></article>)}</div>}
+      {configured&&tracks.length>0&&<button className="more-button" onClick={()=>setOffset(value=>value+tracks.length)} disabled={loading}>{loading?"Loading…":"Find more music ↓"}</button>}
     </section>
-    {!query&&<section className="section recent"><div className="section-title"><div><span className="overline muted">BACK IN YOUR ORBIT</span><h2>Recently played</h2></div><button className="see-all">History&nbsp; →</button></div><div className="table-head"><span>#</span><span>TITLE</span><span>ALBUM</span><span>◷</span><span/></div>{tracks.slice(0,5).map((x,i)=><div className={"track-row "+(current===i?"current":"")} key={x.title}><span className="index">{current===i&&playing?"♫":"0"+(i+1)}</span><button className="track-info" onClick={()=>play(i)}><img src={art(x.art,100)} alt=""/><span><b>{x.title}</b><small>{x.artist}</small></span></button><span className="track-album">{x.album}</span><span className="duration">{time(x.seconds)}</span><button className={"track-like "+(liked.includes(i)?"liked-text":"")} onClick={()=>like(i)} aria-label="Toggle liked">{liked.includes(i)?"♥":"♡"}</button></div>)}</section>}
-    <footer className="footer-note"><span>Made for the in-between moments</span><span>SONORA · YOUR SOUND, YOUR SPACE</span></footer>
-   </div>
-  </section>
-  <aside className="right-rail"><div className="rail-label"><span className="overline muted">NOW IN YOUR ORBIT</span><button>•••</button></div><div className="now-card glass"><div className="now-image"><img src={art(t.art,800)} alt={t.album+" artwork"}/><span>SONORA<br/>SESSIONS</span><button>•••</button></div><div className="now-title"><div><h2>{t.title}</h2><p>{t.artist}</p></div><button className="liked-text" onClick={()=>like(current)}>{liked.includes(current)?"♥":"♡"}</button></div><div className="listening"><i/><span><small>YOU'RE LISTENING TO</small><b>Soft edges, open skies</b></span><span>✧</span></div><div className="rail-sep"/><div className="up-next"><div className="up-head"><b>UP NEXT</b><button>Open queue ↗</button></div>{[1,2,3].map(step=>{const i=(current+step)%tracks.length;return <button className="queue" key={tracks[i].title} onClick={()=>play(i)}><img src={art(tracks[i].art,100)} alt=""/><span><b>{tracks[i].title}</b><small>{tracks[i].artist}</small></span><small>{time(tracks[i].seconds)}</small></button>})}</div><div className="share-note"><span>◌</span><div><b>Listening alone?</b><small>Some songs are better shared.</small></div><button>↗</button></div></div></aside>
-  <footer className="player glass"><div className="player-track"><img src={art(t.art,120)} alt=""/><span><b>{t.title}</b><small>{t.artist}</small></span><button className={liked.includes(current)?"liked-text":""} onClick={()=>like(current)}>{liked.includes(current)?"♥":"♡"}</button></div><div className="player-center"><div className="controls"><button className={shuffle?"on":""} onClick={()=>setShuffle(!shuffle)}>⤨</button><button onClick={()=>play((current+tracks.length-1)%tracks.length)}>◀</button><button className="play-main" onClick={()=>setPlaying(!playing)}>{playing?"Ⅱ":"▶"}</button><button onClick={()=>play((current+1)%tracks.length)}>▶</button><button className={repeat?"on":""} onClick={()=>setRepeat(!repeat)}>⟳</button></div><div className="progress"><span>{time(progress)}</span><input aria-label="Track progress" type="range" min="0" max={t.seconds} value={progress} onChange={e=>setProgress(Number(e.target.value))}/><span>{time(t.seconds)}</span></div></div><div className="player-tools"><button>▤</button><span>◖</span><input aria-label="Volume" type="range" min="0" max="100" value={volume} onChange={e=>setVolume(Number(e.target.value))}/><button>⛶</button></div></footer>
- </main>;
+    <footer className="site-footer" id="about"><a href="/" className="wordmark"><span className="mark">s<span>✳</span></span>sonora</a><p>Built around independent artists, clear credits, and a little curiosity.</p><span>MUSIC BY ITS MAKERS · CATALOG VIA JAMENDO · <a href="/privacy">PRIVACY</a></span></footer>
+    <audio ref={audio} onTimeUpdate={e=>setProgress(e.currentTarget.currentTime)} onEnded={next} onError={()=>{if(playing)setError("This stream is unavailable right now.");setPlaying(false)}}/>
+    <footer className="listening-bar"><div className="active-track">{current?<><img src={current.image} alt=""/><span><b>{current.name}</b><small>{current.artist_name}</small></span><a href={current.shareurl} target="_blank" rel="noreferrer">↗</a></>:<><div className="empty-art">✳</div><span><b>Choose a sound to begin</b><small>Independent music, discovered here</small></span></>}</div><div className="listen-controls"><button onClick={()=>setPlaying(value=>!value)} disabled={!current} aria-label={playing?"Pause":"Play"}>{playing?"Ⅱ":"▶"}</button><div className="seek"><span>{fmt(progress)}</span><input aria-label="Seek track" type="range" min="0" max={current?.duration||1} value={progress} style={{background:"linear-gradient(to right, #7774c7 "+((progress/(current?.duration||1))*100)+"%, #252a3727 "+((progress/(current?.duration||1))*100)+"%)"}} onChange={e=>{const value=Number(e.target.value);setProgress(value);if(audio.current)audio.current.currentTime=value}}/><span>{current?fmt(current.duration):"0:00"}</span></div></div><div className="bar-note"><span className="sound-wave">∿</span><span>PLAYING FROM<br/><b>JAMENDO OPEN CATALOG</b></span></div></footer>
+  </main>;
 }
+
+
+
 
 
