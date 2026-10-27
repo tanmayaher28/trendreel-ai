@@ -1,36 +1,29 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Sonora
 
-## Getting Started
+An original music discovery website for independent artists. It searches a catalog and streams only from the music provider, with direct artist and license links on every listing.
 
-First, run the development server:
+## Run locally
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+1. Install Node.js 20 or newer.
+2. Register an app in the Jamendo developer portal at https://developer.jamendo.com/ and add its Client ID to .env.local:
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+   JAMENDO_CLIENT_ID=your_client_id
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Start the Next.js website with npm install, then npm run dev.
+4. Open http://localhost:3000.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The Client ID is read by the server route; it is not placed in the browser bundle. Deploy with the same environment variable configured in your hosting provider. Jamendo asks developers to include the published app URL when registering an application.
 
-## Learn More
+## Catalog and rights
 
-To learn more about Next.js, take a look at the following resources:
+The current adapter searches Jamendo's catalog (roughly half a million independent tracks). This is not every commercial recording. Jamendo content is published under varying Creative Commons licenses; the page links each result to its source and license. Confirm each track's terms before reuse.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Jamendo's published API terms state that free API use is for non-commercial applications. Advertising, revenue, subscriptions, or other commercial use requires contacting Jamendo Licensing for terms. Do not launch a monetized public version until the provider grants the required rights. The app does not copy or host audio files.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Deploy
 
-## Deploy on Vercel
+This is a Next.js App Router app. It needs a server runtime for /api/tracks; a static export will not run the catalog adapter. Configure JAMENDO_CLIENT_ID in the deployment environment, then deploy through Vercel or another compatible Next.js host.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Add an operator contact address to the privacy page before launch. Keep the site free of ads and other revenue unless Jamendo grants commercial terms.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
